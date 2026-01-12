@@ -14,7 +14,7 @@ function App() {
         {/* Header */}
         <header className="text-center mb-8">
           <Logo />
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Coastly</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Coasty</h1>
           <p className="text-lg text-gray-600">A Coast FIRE Calculator</p>
         </header>
 
@@ -55,7 +55,8 @@ function App() {
             withdrawal order: Brokerage → Traditional IRA → Roth IRA → HYS
           </p>
           <p className="mt-1 text-xs">
-            HYS uses its own return rate. Other accounts use the scenario rates (4-8%).
+            HYS uses its own return rate. Other accounts use the scenario rates
+            (4-8%).
           </p>
         </footer>
       </div>
