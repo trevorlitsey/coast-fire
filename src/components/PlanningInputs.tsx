@@ -20,14 +20,12 @@ export default function PlanningInputs({ planning, onChange }: PlanningInputsPro
 
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Current Age
+          Birth Date
         </label>
         <input
-          type="number"
-          min="0"
-          max="120"
-          value={planning.currentAge}
-          onChange={(e) => handleChange('currentAge', parseInt(e.target.value) || 0)}
+          type="date"
+          value={planning.birthDate}
+          onChange={(e) => onChange({ ...planning, birthDate: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
         />
       </div>
@@ -48,9 +46,9 @@ export default function PlanningInputs({ planning, onChange }: PlanningInputsPro
 
       <div>
         <CurrencyInput
-          label="Desired Annual Spending in Retirement"
-          value={planning.desiredAnnualSpending}
-          onChange={(value) => handleChange('desiredAnnualSpending', value)}
+          label="Desired Monthly Spending in Retirement"
+          value={planning.desiredMonthlySpending}
+          onChange={(value) => handleChange('desiredMonthlySpending', value)}
         />
         <p className="text-xs text-gray-500 -mt-3 mb-4">
           Post-tax spending power (what you want available to spend after taxes)

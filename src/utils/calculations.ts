@@ -9,6 +9,23 @@ import {
 } from '../types';
 
 /**
+ * Calculate current age from birth date
+ */
+export function calculateCurrentAge(birthDate: string): number {
+  const birth = new Date(birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+
+  // Adjust if birthday hasn't occurred this year yet
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+
+  return age;
+}
+
+/**
  * Calculate target portfolio based on 4% rule
  */
 export function calculateTargetPortfolio(annualSpending: number): number {
@@ -47,7 +64,27 @@ export function calculateAllFutureValues(
 }
 
 /**
- * Calculate after-tax value using tax-efficient withdrawal order
+ * Calculate total after-tax value of all accounts (no cap)
+ */
+export function calculateTotalAfterTaxValue(
+  futureValue: FutureValue,
+  taxSettings: TaxSettings
+): number {
+  // Brokerage: taxed at capital gains rate (100% gains)
+  const brokerageAfterTax = futureValue.brokerage * (1 - taxSettings.capitalGainsTaxRate);
+
+  // Traditional IRA: taxed at ordinary income rate
+  const tradIRAAfterTax = futureValue.traditionalIRA * (1 - taxSettings.traditionalIRATaxRate);
+
+  // Roth IRA: tax-free
+  const rothIRAAfterTax = futureValue.rothIRA;
+
+  return brokerageAfterTax + tradIRAAfterTax + rothIRAAfterTax;
+}
+
+/**
+ * Calculate after-tax value using tax-efficient withdrawal order (capped at target)
+ * This is used to determine if the goal is met
  */
 export function calculateAfterTaxValue(
   futureValue: FutureValue,
@@ -88,17 +125,24 @@ export function calculateReturnRateResult(
   inputs: CalculatorInputs,
   returnRate: number
 ): ReturnRateResult {
-  const years = inputs.planning.targetRetirementAge - inputs.planning.currentAge;
-  const targetPortfolio = calculateTargetPortfolio(inputs.planning.desiredAnnualSpending);
+  const currentAge = calculateCurrentAge(inputs.planning.birthDate);
+  const years = inputs.planning.targetRetirementAge - currentAge;
+  const annualSpending = inputs.planning.desiredMonthlySpending * 12;
+  const targetPortfolio = calculateTargetPortfolio(annualSpending);
 
   const futureValue = calculateAllFutureValues(inputs.balances, returnRate, years);
-  const afterTaxValue = calculateAfterTaxValue(futureValue, inputs.taxSettings, targetPortfolio);
+
+  // Calculate total after-tax value for display
+  const afterTaxValue = calculateTotalAfterTaxValue(futureValue, inputs.taxSettings);
+
+  // Check if goal is met using tax-efficient withdrawal order
+  const afterTaxValueForGoal = calculateAfterTaxValue(futureValue, inputs.taxSettings, targetPortfolio);
 
   return {
     returnRate,
     futureValue,
     afterTaxValue,
-    meetsGoal: afterTaxValue >= targetPortfolio,
+    meetsGoal: afterTaxValueForGoal >= targetPortfolio,
     targetPortfolio,
   };
 }
@@ -111,8 +155,10 @@ export function calculateGapAnalysis(
   returnRate: number,
   currentAfterTaxValue: number
 ): GapAnalysisResult {
-  const years = inputs.planning.targetRetirementAge - inputs.planning.currentAge;
-  const targetPortfolio = calculateTargetPortfolio(inputs.planning.desiredAnnualSpending);
+  const currentAge = calculateCurrentAge(inputs.planning.birthDate);
+  const years = inputs.planning.targetRetirementAge - currentAge;
+  const annualSpending = inputs.planning.desiredMonthlySpending * 12;
+  const targetPortfolio = calculateTargetPortfolio(annualSpending);
   const gap = targetPortfolio - currentAfterTaxValue;
 
   // One-time contribution needed today
@@ -151,7 +197,8 @@ export function calculateGapAnalysis(
  */
 export function calculateCoastFire(inputs: CalculatorInputs): CalculatorResults {
   const returnRates = [0.04, 0.05, 0.06, 0.07, 0.08];
-  const targetPortfolio = calculateTargetPortfolio(inputs.planning.desiredAnnualSpending);
+  const annualSpending = inputs.planning.desiredMonthlySpending * 12;
+  const targetPortfolio = calculateTargetPortfolio(annualSpending);
 
   const returnRateResults = returnRates.map(rate =>
     calculateReturnRateResult(inputs, rate)

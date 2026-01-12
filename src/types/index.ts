@@ -5,9 +5,9 @@ export interface AccountBalances {
 }
 
 export interface PlanningInputs {
-  currentAge: number;
+  birthDate: string; // YYYY-MM-DD format
   targetRetirementAge: number;
-  desiredAnnualSpending: number;
+  desiredMonthlySpending: number;
 }
 
 export interface TaxSettings {

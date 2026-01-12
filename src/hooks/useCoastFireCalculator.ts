@@ -1,25 +1,37 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { CalculatorInputs, CalculatorResults } from '../types';
 import { calculateCoastFire } from '../utils/calculations';
+import { loadInputs, saveInputs } from '../utils/storage';
+
+const defaultInputs: CalculatorInputs = {
+  balances: {
+    traditionalIRA: 0,
+    rothIRA: 0,
+    brokerage: 0,
+  },
+  planning: {
+    birthDate: '1996-01-01',
+    targetRetirementAge: 65,
+    desiredMonthlySpending: 6667,
+  },
+  taxSettings: {
+    traditionalIRATaxRate: 0.25,
+    capitalGainsTaxRate: 0.25,
+    brokerageCostBasis: 1.0,
+  },
+};
 
 export function useCoastFireCalculator() {
-  const [inputs, setInputs] = useState<CalculatorInputs>({
-    balances: {
-      traditionalIRA: 0,
-      rothIRA: 0,
-      brokerage: 0,
-    },
-    planning: {
-      currentAge: 30,
-      targetRetirementAge: 65,
-      desiredAnnualSpending: 80000,
-    },
-    taxSettings: {
-      traditionalIRATaxRate: 0.25,
-      capitalGainsTaxRate: 0.25,
-      brokerageCostBasis: 1.0,
-    },
+  // Initialize state from localStorage or use defaults
+  const [inputs, setInputs] = useState<CalculatorInputs>(() => {
+    const stored = loadInputs();
+    return stored || defaultInputs;
   });
+
+  // Save to localStorage whenever inputs change
+  useEffect(() => {
+    saveInputs(inputs);
+  }, [inputs]);
 
   // Memoize calculations to avoid recalculating on every render
   const results = useMemo<CalculatorResults>(() => {

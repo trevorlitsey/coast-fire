@@ -3,7 +3,6 @@ import AccountBalancesInput from './components/AccountBalancesInput';
 import PlanningInputs from './components/PlanningInputs';
 import TaxSettings from './components/TaxSettings';
 import ResultsGrid from './components/ResultsGrid';
-import GapAnalysis from './components/GapAnalysis';
 
 function App() {
   const { inputs, setInputs, results } = useCoastFireCalculator();
@@ -51,12 +50,8 @@ function App() {
           <div>
             <ResultsGrid
               results={results.returnRateResults}
-              targetPortfolio={results.targetPortfolio}
-            />
-
-            <GapAnalysis
               gapAnalysis={results.gapAnalysis}
-              results={results.returnRateResults}
+              targetPortfolio={results.targetPortfolio}
             />
           </div>
         </div>
