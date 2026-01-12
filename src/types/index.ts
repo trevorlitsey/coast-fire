@@ -1,4 +1,5 @@
 export interface AccountBalances {
+  hys: number;
   traditionalIRA: number;
   rothIRA: number;
   brokerage: number;
@@ -23,6 +24,7 @@ export interface CalculatorInputs {
 }
 
 export interface FutureValue {
+  hys: number;
   traditionalIRA: number;
   rothIRA: number;
   brokerage: number;

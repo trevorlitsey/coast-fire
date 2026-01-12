@@ -51,15 +51,17 @@ export function calculateAllFutureValues(
   returnRate: number,
   years: number
 ): FutureValue {
+  const hys = calculateFutureValue(balances.hys, returnRate, years);
   const traditionalIRA = calculateFutureValue(balances.traditionalIRA, returnRate, years);
   const rothIRA = calculateFutureValue(balances.rothIRA, returnRate, years);
   const brokerage = calculateFutureValue(balances.brokerage, returnRate, years);
 
   return {
+    hys,
     traditionalIRA,
     rothIRA,
     brokerage,
-    total: traditionalIRA + rothIRA + brokerage,
+    total: hys + traditionalIRA + rothIRA + brokerage,
   };
 }
 
@@ -70,6 +72,9 @@ export function calculateTotalAfterTaxValue(
   futureValue: FutureValue,
   taxSettings: TaxSettings
 ): number {
+  // HYS: taxed at ordinary income rate (100% gains assumption)
+  const hysAfterTax = futureValue.hys * (1 - taxSettings.traditionalIRATaxRate);
+
   // Brokerage: taxed at capital gains rate (100% gains)
   const brokerageAfterTax = futureValue.brokerage * (1 - taxSettings.capitalGainsTaxRate);
 
@@ -79,7 +84,7 @@ export function calculateTotalAfterTaxValue(
   // Roth IRA: tax-free
   const rothIRAAfterTax = futureValue.rothIRA;
 
-  return brokerageAfterTax + tradIRAAfterTax + rothIRAAfterTax;
+  return hysAfterTax + brokerageAfterTax + tradIRAAfterTax + rothIRAAfterTax;
 }
 
 /**
@@ -113,6 +118,14 @@ export function calculateAfterTaxValue(
     const fromRothIRA = Math.min(futureValue.rothIRA, remainingNeeded);
     afterTaxTotal += fromRothIRA;
     remainingNeeded -= fromRothIRA;
+  }
+
+  // Step 4: Withdraw from HYS last (ordinary income tax on 100%)
+  if (remainingNeeded > 0) {
+    const hysAfterTax = futureValue.hys * (1 - taxSettings.traditionalIRATaxRate);
+    const fromHYS = Math.min(hysAfterTax, remainingNeeded);
+    afterTaxTotal += fromHYS;
+    remainingNeeded -= fromHYS;
   }
 
   return afterTaxTotal;
@@ -153,35 +166,37 @@ export function calculateReturnRateResult(
 export function calculateGapAnalysis(
   inputs: CalculatorInputs,
   returnRate: number,
-  currentAfterTaxValue: number
+  futureValue: FutureValue
 ): GapAnalysisResult {
   const currentAge = calculateCurrentAge(inputs.planning.birthDate);
   const years = inputs.planning.targetRetirementAge - currentAge;
   const annualSpending = inputs.planning.desiredMonthlySpending * 12;
   const targetPortfolio = calculateTargetPortfolio(annualSpending);
+
+  // Use tax-efficient withdrawal order to calculate current after-tax value
+  const currentAfterTaxValue = calculateAfterTaxValue(futureValue, inputs.taxSettings, targetPortfolio);
   const gap = targetPortfolio - currentAfterTaxValue;
 
-  // One-time contribution needed today
-  const oneTimeContribution = gap > 0 ? gap / Math.pow(1 + returnRate, years) : 0;
+  // One-time contribution needed today (accounts for capital gains tax on brokerage)
+  // After-tax value needed = contribution * (1 + rate)^years * (1 - capitalGainsTaxRate)
+  const oneTimeContribution = gap > 0
+    ? gap / (Math.pow(1 + returnRate, years) * (1 - inputs.taxSettings.capitalGainsTaxRate))
+    : 0;
 
-  // Monthly contribution (using future value of annuity formula)
+  // Monthly contribution (accounts for capital gains tax)
   let monthlyContribution = 0;
   if (gap > 0) {
     const monthlyRate = returnRate / 12;
     const monthlyPeriods = years * 12;
-    monthlyContribution = gap / (
-      ((Math.pow(1 + monthlyRate, monthlyPeriods) - 1) / monthlyRate) *
-      (1 + monthlyRate)
-    );
+    const futureValueFactor = ((Math.pow(1 + monthlyRate, monthlyPeriods) - 1) / monthlyRate) * (1 + monthlyRate);
+    monthlyContribution = gap / (futureValueFactor * (1 - inputs.taxSettings.capitalGainsTaxRate));
   }
 
-  // Annual contribution
+  // Annual contribution (accounts for capital gains tax)
   let annualContribution = 0;
   if (gap > 0) {
-    annualContribution = gap / (
-      ((Math.pow(1 + returnRate, years) - 1) / returnRate) *
-      (1 + returnRate)
-    );
+    const futureValueFactor = ((Math.pow(1 + returnRate, years) - 1) / returnRate) * (1 + returnRate);
+    annualContribution = gap / (futureValueFactor * (1 - inputs.taxSettings.capitalGainsTaxRate));
   }
 
   return {
@@ -205,7 +220,7 @@ export function calculateCoastFire(inputs: CalculatorInputs): CalculatorResults 
   );
 
   const gapAnalysis = returnRateResults.map(result =>
-    calculateGapAnalysis(inputs, result.returnRate, result.afterTaxValue)
+    calculateGapAnalysis(inputs, result.returnRate, result.futureValue)
   );
 
   return {

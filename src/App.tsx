@@ -60,7 +60,7 @@ function App() {
         <footer className="mt-8 text-center text-sm text-gray-500">
           <p>
             This calculator uses the 4% rule and assumes tax-efficient withdrawal order:
-            Brokerage → Traditional IRA → Roth IRA
+            HYS → Brokerage → Traditional IRA → Roth IRA
           </p>
         </footer>
       </div>

@@ -5,6 +5,7 @@ import { loadInputs, saveInputs } from '../utils/storage';
 
 const defaultInputs: CalculatorInputs = {
   balances: {
+    hys: 0,
     traditionalIRA: 0,
     rothIRA: 0,
     brokerage: 0,

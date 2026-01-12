@@ -19,6 +19,12 @@ export default function AccountBalancesInput({ balances, onChange }: AccountBala
       <h2 className="text-xl font-semibold text-gray-800 mb-4">Account Balances</h2>
 
       <CurrencyInput
+        label="High Yield Savings (HYS)"
+        value={balances.hys}
+        onChange={(value) => handleBalanceChange('hys', value)}
+      />
+
+      <CurrencyInput
         label="Traditional IRA Balance"
         value={balances.traditionalIRA}
         onChange={(value) => handleBalanceChange('traditionalIRA', value)}

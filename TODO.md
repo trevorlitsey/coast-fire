@@ -1,0 +1,3 @@
+- put HYS last
+- Make "Target Portfolio" amount pre-tax based on the ratio of currently input values
+- Make "Account Balances" use number inputs and step by $10k
