@@ -9,6 +9,7 @@ export interface PlanningInputs {
   birthDate: string; // YYYY-MM-DD format
   targetRetirementAge: number;
   desiredMonthlySpending: number;
+  hysReturnRate: number; // decimal (0.04 for 4%)
 }
 
 export interface TaxSettings {

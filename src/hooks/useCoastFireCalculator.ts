@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
-import { CalculatorInputs, CalculatorResults } from '../types';
-import { calculateCoastFire } from '../utils/calculations';
-import { loadInputs, saveInputs } from '../utils/storage';
+import { useState, useMemo, useEffect } from "react";
+import { CalculatorInputs, CalculatorResults } from "../types";
+import { calculateCoastFire } from "../utils/calculations";
+import { loadInputs, saveInputs } from "../utils/storage";
 
 const defaultInputs: CalculatorInputs = {
   balances: {
@@ -11,13 +11,14 @@ const defaultInputs: CalculatorInputs = {
     brokerage: 0,
   },
   planning: {
-    birthDate: '1996-01-01',
+    birthDate: "1996-01-01",
     targetRetirementAge: 65,
     desiredMonthlySpending: 6667,
+    hysReturnRate: 0.04,
   },
   taxSettings: {
     traditionalIRATaxRate: 0.25,
-    capitalGainsTaxRate: 0.25,
+    capitalGainsTaxRate: 0.2,
     brokerageCostBasis: 1.0,
   },
 };
