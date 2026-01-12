@@ -3,6 +3,7 @@ import AccountBalancesInput from "./components/AccountBalancesInput";
 import PlanningInputs from "./components/PlanningInputs";
 import TaxSettings from "./components/TaxSettings";
 import ResultsGrid from "./components/ResultsGrid";
+import Logo from "./components/Logo";
 
 function App() {
   const { inputs, setInputs, results } = useCoastFireCalculator();
@@ -12,6 +13,7 @@ function App() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="text-center mb-8">
+          <Logo />
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Coastly</h1>
           <p className="text-lg text-gray-600">A Coast FIRE Calculator</p>
         </header>
